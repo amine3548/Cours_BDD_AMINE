@@ -4,7 +4,18 @@ def afficher_menu():
     print("3. Quitter")    
 
 def choix_option():
-    
+    # demande a l'utilisateur de choisir une option
+    saisie = input("Entrer votre choix: ")
+    # verifier si la saisi est valide
+    saisie_is_valide(saisie)
+    # retourner la saisi
+    return saisie
+
+def saisie_is_valide(choix,min_val,max_val):
+    # tant que le choix n'est pas valide
+    #   on redemande a l'user de choisir 
+    #
+
 
 def main():
     # afficher le menu
