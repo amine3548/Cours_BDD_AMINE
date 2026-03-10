@@ -86,7 +86,6 @@ def afficher_heroes_disponible(liste_joueur):
             test.append(i)
     return test
 
-def heroes_valid():
     
 
 def choisir_heroes():
