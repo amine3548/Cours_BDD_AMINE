@@ -65,7 +65,6 @@ def name_team():
             # retourn le nom
             return name
         
-    
 def name_is_valide(name):
     # si la taille du nom n'es pas entre 3 et 20
     if len(name) < 3 or len(name) > 20:
@@ -75,35 +74,41 @@ def name_is_valide(name):
     else:
         return True
 
-# def recuperer_heroes(heroes):
-#     for x in db_heroes.find():
-#         heroes.append(x)
-    
            
-
 def recup_heroes_disponible(liste_joueur):
-    #initialiser une liste ou metre les hero recuperer
-    recup_hero = []
-    # pour chaque element de la liste de base
-    for i in heroes:
-    #   si il n'est pas dans la liste du joueur
-        if i not in liste_joueur:
-    #       # on le rajoute dans la liste
-            recup_hero.append(i)
-    return recup_hero
-    
+    heroes_liste = heroes
+    # pour chaque personnage de la liste
+    for i in heroes_liste:
+        # si le perso est dans la liste du joueur
+        if i in liste_joueur:
+            # on le supprime de la liste
+            heroes_liste.remove(i)
+    # retourne la liste des hero disponible
+    return heroes_liste
+
+def afficher_personnage_choix(liste):
+    print(" ")
+    n = 1
+    for personnage in liste:
+        print(f"{n} {personnage}")
+        n += 1
+    print(" ")
+
+def afficher_personnage(liste):
+    for personnage in liste:
+        print(personnage)
+
 def choix_heroes(liste_hero):
     # tant que vrai
     while True:
         # afficher les hero disponible
-        print(liste_hero)
+        afficher_personnage_choix(liste_hero)
         # demande au joueur de choisir un perso
         perso = input(f"Entrer un personnage (1, {len(liste_hero)}): ")
         # si la saisi est valider
         if saisie_is_valide(perso, 1, len(liste_hero)) is True:
             # on return perso
             return perso
-        
 
 def creation_equipe():
     # initialiser une liste qui va contenir les heros du joueur
@@ -118,15 +123,14 @@ def creation_equipe():
         liste_heroes_joueur.append(heroes[heroes_joueur -1])
     return liste_heroes_joueur
 
-
 def equipe_is_alive(equipe):
     # si l'equipe est composer d'au moins un hero
-    print("verification")
     if len(equipe) > 0:
         # retourne vrai
         return True
     # retourne faux
-    return False
+    else:
+        return False
 
 def monstre_is_dead(monstre):
     # si HP du monstre sont inferieur a 0
@@ -137,10 +141,10 @@ def monstre_is_dead(monstre):
     return False
 
 def attaquer(attaquant, victime):
-    # verifier si l'attaque final est > 0
-    if attaquant["ATK"] - victime["DEF"] < 0:
-        # l'attaque = 0
-        print("Attaque ineficace!!")
+    # verifier si l'attaque final est <= 0
+    if attaquant["ATK"] - victime["DEF"] <= 0:
+        # l'attaque est ineficace
+        print(f"L'attaque de {attaquant["name"]} est ineficace!!")
         return victime["HP"]
     # sinon
     else:
@@ -149,14 +153,14 @@ def attaquer(attaquant, victime):
         # retourner le nouveau HP
         return new_HP
 
-    
-def hero_is_dead(hero, equipe):
+def hero_is_dead(hero):
     # si les HP du hero <= 0
     if hero["HP"] <= 0:
         # retourne vrai
         return True
     # sinon retourne faux
-    return False
+    else:
+        return False
 
 def choix_auto_hero(equipe):
     # choisir au hasard un element de la liste de l'equipe
@@ -170,42 +174,56 @@ def apparition_monstre():
     return monstre
 
 def sup_hero(equipe, hero):
-    # supprimer le hero de l'equipe
+    equipe.remove(hero)
     
-       
-
+def tour(equipe, monstre):
+    # chaque personnage de l'equipe
+    for hero in equipe:
+        # attaque le monstre
+        monstre["HP"] = attaquer(hero, monstre)
+        # verifie si le monstre est mort
+        if monstre_is_dead(monstre) is True:
+            # retourne
+            return True
+    
+    # verifie si l'equipe est vivant
+    if equipe_is_alive(equipe) is False:    
+        return
+    
+    # choisi auto un hero de l'equipe a attaque
+    hero_victime = choix_auto_hero(equipe)
+    # monstre attaque ce hero
+    hero_victime["HP"] = attaquer(monstre, hero_victime)
+    print(monstre)
+    afficher_personnage(equipe)
+    # verifi si le hero est mort
+    if hero_is_dead(hero_victime) is True:
+        # suprimme le hero de l'equipe
+        sup_hero(equipe, hero_victime)
+        
+        
+    
 def commencer_manche(equipe, monstre):
-    # tant que le monstre de la manche n'est pas mort
-    while monstre_is_dead(monstre) is False:
-        print("debut de manche")
-        # chaque hero de l'equipe
-        for i in equipe:
-            # attaque le monstre
-            monstre["HP"] = attaquer(i, monstre)
-            print(monstre)
-            # verifier si le monstre est mort
-            monstre_is_dead(monstre)
-        # choix auto du hero a ataquer
-        hero_victime = choix_auto_hero(equipe)
-        # le monstre attaque le hero
-        hero_victime["HP"] = attaquer(monstre, hero_victime)
-        print(hero_victime)
-        # si le hero est mort
-        if hero_is_dead(hero_victime, equipe) is True:
-            # enlever le hero de l'equipe
-            sup_hero(equipe, hero_victime)
-        # manche terminer
-        print("manche terminer")
+    score = 0
+    # tant que le monstre n'est pas mort
+    while monstre_is_dead(monstre) is not True:
+        # on fait un tour
+        tour(equipe, monstre)
+        # on incremente le score
+        score +=1
+    # retourne le score
+    return score
         
 def commencer_jeu(equipe):
+    conteur = 0
     # tant que tout les hero de l'equipe sont vivant
     while equipe_is_alive(equipe) is True:
+        conteur += 1
         # choisi au hasard un monstre
         monstre_manche = apparition_monstre()
         # commencer la manche
-        commencer_manche(equipe, monstre_manche)
-        print("terminer")
-
+        score = commencer_manche(equipe, monstre_manche)        
+    return score
 
 def play_game():
     # demande a l'utilisateur d'entrer un nom
@@ -213,8 +231,8 @@ def play_game():
     # utilisateur choisi ses hero
     equipe = creation_equipe()
     # le jeu commence
-    commencer_jeu(equipe)
-    
+    score = commencer_jeu(equipe)
+    print(f"Nom: {nom_choisi} \nScore: {score}")
 
 def main():
     # afficher le menu
@@ -226,9 +244,10 @@ def main():
         play_game()
     # si choix 2 afficher les score
     if int(choix) == 2:
-        afficher_score()
+        afficher_top_score()
     # si choix 3 quitter
     if int(choix) == 3:
         quitter()
+    
     
 main()
